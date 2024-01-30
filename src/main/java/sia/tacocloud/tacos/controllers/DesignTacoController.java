@@ -11,8 +11,11 @@ import sia.tacocloud.tacos.entities.Ingredient;
 import sia.tacocloud.tacos.entities.Ingredient.Type;
 import sia.tacocloud.tacos.entities.Taco;
 import sia.tacocloud.tacos.entities.TacoOrder;
+import sia.tacocloud.tacos.entities.udt.IngredientUDT;
 import sia.tacocloud.tacos.repositories.IngredientRepository;
+import sia.tacocloud.tacos.utils.TacoUDRUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,11 +34,12 @@ public class DesignTacoController {
 
     @ModelAttribute
     public void addIngredientsToModel(Model model) {
-        Iterable<Ingredient> ingredients = ingredientRepo.findAll();
+        List<Ingredient> ingredients = (List<Ingredient>) ingredientRepo.findAll();
         Type[] types = Ingredient.Type.values();
         for (Type type : types) {
             model.addAttribute(type.toString().toLowerCase(),
-                    filterByType((List<Ingredient>) ingredients, type));
+                    filterByType(ingredients,
+                            type));
         }
     }
 
@@ -50,14 +54,14 @@ public class DesignTacoController {
     }
 
     @GetMapping
-    public String showDesignForm(){
+    public String showDesignForm() {
         return "design";
     }
 
     @PostMapping
     public String processTaco(@Valid Taco taco, Errors errors,
                               @ModelAttribute TacoOrder tacoOrder) {
-        if(errors.hasErrors()){
+        if (errors.hasErrors()) {
             return "design";
         }
         tacoOrder.addTaco(taco);
@@ -66,7 +70,8 @@ public class DesignTacoController {
         return "redirect:orders/current";
     }
 
-    private Iterable<Ingredient> filterByType(List<Ingredient> ingredients, Type type) {
+    private Iterable<Ingredient> filterByType(List<Ingredient> ingredients,
+                                              Type type) {
         return ingredients
                 .stream()
                 .filter(x -> x.getType().equals(type))
